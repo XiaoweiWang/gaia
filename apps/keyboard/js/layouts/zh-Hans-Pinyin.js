@@ -15,7 +15,7 @@ Keyboards['zh-Hans-Pinyin'] = {
     '.': '.,?!;:',
     '。': '。，？！；：'
   },
-  keys: [
+  /*keys: [
     [
       { value: 'q' }, { value: 'w' }, { value: 'e' } , { value: 'r' },
       { value: 't' } , { value: 'y' }, { value: 'u' } , { value: 'i' },
@@ -25,13 +25,22 @@ Keyboards['zh-Hans-Pinyin'] = {
       { value: 'g' } , { value: 'h' }, { value: 'j' }, { value: 'k' },
       { value: 'l' }
     ], [
-      /*use 'A' keycode for this special symbol, so that it won't conflict with "'" in symbol page */
+      /*use 'A' keycode for this special symbol, so that it won't conflict with "'" in symbol page 
       { value: "'", ratio: 1.5, keyCode: 65 },
       { value: 'z' },
       { value: 'x' }, { value: 'c' }, { value: 'v' }, { value: 'b' },
       { value: 'n' }, { value: 'm' },
       { value: '⌫', ratio: 1.5, keyCode: KeyEvent.DOM_VK_BACK_SPACE }
     ], [
+      { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
+      { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
+    ]
+  ],*/
+  keys: [
+  [{value:'h'},{value:'s'},
+  {value:'p'},{value:'n'},
+  {value:'z'},{value:'?', keyCode: -99},{ value: '⌫', /*ratio: 1.5,*/ keyCode: KeyEvent.DOM_VK_BACK_SPACE }],
+  [
       { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
       { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
     ]

@@ -1,47 +1,81 @@
-/* -*- Mode: js; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
-
 'use strict';
 
-(function() {
-var debugging = false;
-var debug = function jspinyin_debug(str) {
-  if (!debugging) {
-    return;
-  }
+var searchSingle;
 
-  var done = false;
-  if (typeof window != 'undefined' && window.dump) {
-    window.dump('jspinyin: ' + str + '\n');
-    done = true;
-  }
-  if (typeof console != 'undefined' && console.log) {
-    console.log('jspinyin: ' + str);
-    if (arguments.length > 1) {
-      console.log.apply(this, arguments);
-    }
-    done = true;
-  }
-  if (done) {
-    return;
-  }
-  if (typeof Test != 'undefined') {
-    print('jspinyin: ' + str + '\n');
-  }
-};
 
-var assert = function jspinyin_assert(condition, msg) {
-  if (!debugging)
-    return;
-  if (!condition) {
-    var str = typeof msg === 'undefined' ? assert.caller.toString() : msg;
-    if (typeof alert === 'function') {
-      alert(msg);
-    } else {
-      throw str;
+//function initModule () {
+ var Module = {
+ 
+  _isReady: false,
+ 
+   filePackagePrefixURL:'js/imes/jspinyin/',
+   
+
+  _main: function(){
+    //console.log('hello');
+    searchSingle=
+      Module.cwrap('strokeSearchSearch','number',['string','number','number']);
+    var strokesSearchInit=
+      Module.cwrap('strokeSearchInit','',[]);
+    strokesSearchInit();
+    Module._isReady = true;
+    console.log('engine is ready');
+  },
+  
+  //searchSingle: function(){ console.log('no override!');},
+  
+  
+  /*_initSearch: function(){
+    var searchInit = Module.cwrap('strokeSearchInit','',[]);
+    searchInit();
+  },*/
+  
+    getResults: function(strokes, limit){
+          //var searchSingle = Module.cwrap('strokeSearchSearch','number',['string','number','number']);
+          
+          // Create example data to test float_multiply_array
+          var data = new Int32Array(limit);
+          
+          // Get data byte size, allocate memory on Emscripten heap, and get pointer
+          var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
+          var dataPtr = Module._malloc(nDataBytes);
+          
+          // Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
+          var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, nDataBytes);
+          dataHeap.set(new Uint8Array(data.buffer));
+          
+          // Call function and get result
+          //var strokevalue = document.getElementById("strokeall").value;
+          //testStrokeSearch (strokes,dataHeap.byteOffset);
+          //searchInit();
+          //this.searchSingle (strokes,limit,dataHeap.byteOffset);
+          //var searchtest = Module.cwrap('strokeSearchSearch','number',['string','number','number']);
+          //searchtest (strokes,limit,dataHeap.byteOffset);
+          searchSingle(strokes,limit,dataHeap.byteOffset);
+          var result = new Int32Array(dataHeap.buffer, dataHeap.byteOffset, data.length);
+          console.log('resultlength:'+result.length);
+          
+          // Free memory
+          //Module._free(dataHeap.byteOffset);
+          
+          //Module._searchSingle = searchSingle;
+          console.log('finished search');
+          return result;
+          
     }
-  }
-};
+  };
+  
+  //HOW to import js?
+  /*try {
+   document.write('<script type="text/javascript" src = "engine_test.js"></script>');
+  } catch (e) {
+    console.log(e.toString());
+  }*/
+  
+
+  
+ (function () { 
+//}
 
 /* for non-Mozilla browsers */
 if (!KeyEvent) {
@@ -51,11 +85,11 @@ if (!KeyEvent) {
   };
 }
 
-var IMEngineBase = function engineBase_constructor() {
+var IMEngineBase = function engineBase_constructor() { //？
   this._glue = {};
 };
 
-IMEngineBase.prototype = {
+IMEngineBase.prototype = {  //prototype, some parts to be overrided, no modify here
   /**
    * Glue ojbect between the IMEngieBase and the IMEManager.
    */
@@ -64,17 +98,17 @@ IMEngineBase.prototype = {
      * The source code path of the IMEngine
      * @type String
      */
-    path: '',
+    path: '', //need
 
     /**
      * Sends candidates to the IMEManager
      */
-    sendCandidates: function(candidates) {},
+    sendCandidates: function(candidates) {}, //need
 
     /**
      * Sends pending symbols to the IMEManager.
      */
-    sendPendingSymbols: function(symbols) {},
+    sendPendingSymbols: function(symbols) {},  //need
 
     /**
      * Passes the clicked key to IMEManager for default action.
@@ -92,7 +126,7 @@ IMEngineBase.prototype = {
      * Change the keyboad
      * @param {String} keyboard The name of the keyboard.
      */
-    alterKeyboard: function(keyboard) {}
+    alterKeyboard: function(keyboard) {}  //unsure?
   },
 
   /**
@@ -127,7 +161,7 @@ IMEngineBase.prototype = {
    * @param {String} text The text of the candidate.
    * @param {Object} data User data of the candidate.
    */
-  select: function engineBase_select(text, data) {
+  select: function engineBase_select(text, data) { //user data no need
   },
 
   /**
@@ -143,83 +177,9 @@ IMEngineBase.prototype = {
   }
 };
 
-var emEngineWrapper = {
-  _worker: null,
-  _callback: null,
-  _initialized: false,
-
-  post: function(id, param, callback) {
-    if (!this._initialized && id != 'init')
-      throw 'Database not ready!';
-
-    if (!this._callback[id])
-      this._callback[id] = [];
-
-    this._callback[id].push(callback);
-    this._worker.postMessage({
-      id: id,
-      param: param
-    });
-
-    return true;
-  },
-
-  init: function(path, byteArray, callback) {
-    if (this._initialized) {
-      callback(true);
-      return;
-    }
-
-    var self = this;
-
-    this._callback = {};
-    this._worker = new Worker(path + '/worker.js');
-
-    this._worker.onmessage = function(e) {
-      var data = e.data;
-
-      switch (data.id) {
-      case 'message':
-        console.log('emEngineWrapper: ' + data.returnValue);
-        break;
-      default:
-        var msgCallback = self._callback[data.id].shift();
-        if (msgCallback)
-          msgCallback(data.returnValue);
-      }
-    };
-
-    this.post('init', {
-      userDict: byteArray
-    }, function(isOk) {
-      if (isOk) {
-        self._initialized = true;
-      } else {
-        self.uninit();
-      }
-      callback(isOk);
-    });
-  },
-
-  uninit: function() {
-    if (this._worker)
-      this._worker.terminate();
-    this._worker = null;
-    this._callback = null;
-    this._initialized = false;
-  },
-
-  isReady: function() {
-    return this._initialized;
-  }
-};
-
-var IMEngine = function engine_constructor() {
+var IMEngine = function engine_constructor() {  //constructor func?
   IMEngineBase.call(this);
 };
-
-// We use keycode 65 to represent "'" for pinyin input method
-var SPECIAL_KEYCODE_FOR_DELIMITER = 65;
 
 IMEngine.prototype = {
   // Implements IMEngineBase
@@ -227,7 +187,7 @@ IMEngine.prototype = {
 
   // Buffer limit will force output the longest matching terms
   // if the length of the syllables buffer is reached.
-  _kBufferLenLimit: 30,
+  _kBufferLenLimit: 35,
 
   // Remember the candidate length of last searching result because we don't
   // want to output all candidates at a time.
@@ -243,42 +203,19 @@ IMEngine.prototype = {
   _historyText: '',
 
   _pendingSymbols: '',
-  _firstCandidate: '',
+  _firstCandidate: '', 
   _keypressQueue: [],
   _isWorking: false,
 
   _isActive: false,
   _uninitTimer: null,
 
-  _sendPendingSymbols: function engine_sendPendingSymbols() {
-    debug('SendPendingSymbol: ' + this._pendingSymbols);
+  _sendPendingSymbols: function engine_sendPendingSymbols() {//no need change alot, to show strokes
 
     if (this._pendingSymbols) {
       var self = this;
+      self._glue.setComposition(self._pendingSymbols);
 
-      emEngineWrapper.post(
-        'im_get_pending_symbols_info',
-        {},
-        function(returnValue) {
-          var fixedLen = returnValue.fixedLen;
-          var splStart = returnValue.splStart;
-          var splStartLen = splStart.length;
-          var display = self._firstCandidate.substring(0, fixedLen);
-
-          if (splStartLen > 1) {
-            for (var i = fixedLen; i < splStartLen - 1; i++) {
-              display += self._pendingSymbols.substring(splStart[i],
-                                                        splStart[i + 1]) + ' ';
-            }
-            display +=
-              self._pendingSymbols.substring(splStart[splStartLen - 1]);
-          } else {
-            display += self._pendingSymbols;
-          }
-
-          self._glue.setComposition(display.trim());
-        }
-      );
     } else {
       this._glue.endComposition();
     }
@@ -289,46 +226,39 @@ IMEngine.prototype = {
    * @param {Array.<string>} candidates The candidates to be sent.
    * @return {void}  No return value.
    */
-  _sendCandidates: function engine_sendCandidates(candidates) {
-    var list = [];
+  _sendCandidates: function engine_sendCandidates(candidates) {  //ok
+    var list = []; // hold candidates
     var len = candidates.length;
     for (var id = 0; id < len; id++) {
-      var cand = candidates[id];
+      var cand = String.fromCharCode(candidates[id]);
       if (id == 0) {
         this._firstCandidate = cand;
       }
       list.push([cand, id]);
     }
 
-    this._glue.sendCandidates(list);
+    this._glue.sendCandidates(list);//send candidates to list, set first candidate
   },
 
-  _start: function engine_start() {
+  _start: function engine_start() { //start engine? no modify
     if (this._isWorking)
       return;
 
-    if (!emEngineWrapper.isReady()) {
-      debug('emEngineWrapper is not ready!');
-      return;
-    }
-
     this._isWorking = true;
-    debug('Start keyQueue loop.');
     this._next();
+    console.log('started');
   },
 
   _next: function engine_next() {
-    debug('Processing keypress');
 
     if (!this._keypressQueue.length) {
-      debug('keyQueue emptied.');
       this._isWorking = false;
       return;
     }
 
-    var code = this._keypressQueue.shift();
+    var code = this._keypressQueue.shift(); //shift: delete first element and return its value
     // We use keycode 65 to represent "'" for pinyin input method
-    var realCode = (code == SPECIAL_KEYCODE_FOR_DELIMITER) ? 39 : code;
+    var realCode =  (code == -99) ? 63 : code;
 
     if (code == 0) {
       // This is a select function operation.
@@ -336,22 +266,18 @@ IMEngine.prototype = {
       return;
     }
 
-    debug('key code: ' + code);
 
     // Backspace - delete last input symbol if exists
     if (code === KeyEvent.DOM_VK_BACK_SPACE) {
-      debug('Backspace key');
 
       if (!this._pendingSymbols) {
         if (this._firstCandidate) {
-          debug('Remove candidates.');
 
           // prevent updateCandidateList from making the same suggestions
           this.empty();
         }
 
         // pass the key to IMEManager for default action
-        debug('Default action.');
         this._glue.sendKey(realCode);
         this._next();
       } else {
@@ -366,14 +292,12 @@ IMEngine.prototype = {
 
     // Select the first candidate if needed.
     if (code === KeyEvent.DOM_VK_RETURN ||
-        !this._isPinyinKey(code) ||
+        !this._isStrokeKey(code) ||
         this._pendingSymbols.length >= this._kBufferLenLimit) {
-      debug('Non-pinyin key is pressed or the input is too long.');
       var sendKey = true;
       if (this._firstCandidate) {
         if (this._pendingSymbols) {
           // candidate list exists; output the first candidate
-          debug('Sending first candidate.');
           this._glue.endComposition(this._firstCandidate);
           // no return here
           if (code === KeyEvent.DOM_VK_RETURN) {
@@ -384,7 +308,6 @@ IMEngine.prototype = {
       }
 
       //pass the key to IMEManager for default action
-      debug('Default action.');
       this.empty();
       if (sendKey) {
         this._glue.sendKey(realCode);
@@ -393,39 +316,35 @@ IMEngine.prototype = {
       return;
     }
 
-    debug('Processing symbol: ' + String.fromCharCode(realCode));
-
     // add symbol to pendingSymbols
     this._appendNewSymbol(realCode);
-    this._updateCandidatesAndSymbols(this._next.bind(this));
+    this._updateCandidatesAndSymbols(this._next.bind(this)); //更新候选值,tobe modified!
   },
 
-  _isPinyinKey: function engine_isPinyinKey(code) {
-    // keycode 65 is used to represent "'" for pinyin input method
-    // a-z
-    if ((code >= 97 && code <= 122) ||
-        code === SPECIAL_KEYCODE_FOR_DELIMITER) {
+  _isStrokeKey :function engine_isStrokeKey(code) { //NEW
+    if(    code === 104 ||code ===110 || code===112 || code === 115 ||code ===122){
       return true;
     }
-
+    
     return false;
   },
-
+  
   _appendNewSymbol: function engine_appendNewSymbol(code) {
     var symbol = String.fromCharCode(code);
     this._pendingSymbols += symbol;
+    console.log('appendsymbol:'+symbol);
   },
 
   _updateCandidatesAndSymbols: function engine_updateCandsAndSymbols(callback) {
     var self = this;
     this._updateCandidateList(function() {
       self._sendPendingSymbols();
+      console.log('updatecandssymbols');
       callback();
     });
   },
 
   _updateCandidateList: function engine_updateCandidateList(callback) {
-    debug('Update Candidate List.');
 
     var self = this;
     var numberOfCandidatesPerRow = this._glue.getNumberOfCandidatesPerRow ?
@@ -433,34 +352,29 @@ IMEngine.prototype = {
 
     this._candidatesLength = 0;
 
-    if (!this._pendingSymbols) {
+    if (!this._pendingSymbols) { // now do NOT consider prediction
       // If there is no pending symbols, make prediction with the previous
       // select words.
-      if (this._historyText) {
-        debug('Buffer is empty; make suggestions based on select term.');
 
-        emEngineWrapper.post('im_search_predicts', {
-          queryString: this._historyText,
-          limit: numberOfCandidatesPerRow + 1
-        }, function(returnValue) {
-          var num = returnValue.length;
-          var predicts = returnValue.results;
-
-          if (num > numberOfCandidatesPerRow + 1)
-            self._candidatesLength = num;
-
-          self._sendCandidates(predicts);
-          callback();
-        });
-      } else {
-        this._sendCandidates([]);
         callback();
-      }
-    } else {
+    } else {            //// Here change to how my engine works!
       // Update the candidates list by the pending pinyin string.
       this._historyText = '';
+      var candidates = Module.getResults(this._pendingSymbols,50);
+      //var candidates = Module.getResults(this._pendingSymbols,numberOfCandidatesPerRow + 1);
+      var num = candidates.length;
+      /*for (var i=0;i<candidates.length;i++){
+        candidates[i] = String.fromCharCode(candidates[i]);
+      }*/
+      //var candidates = Module.getResults(this._pendingSymbols,30);
+      console.log('got results!'+'candsLen:'+num);
+        if (num > numberOfCandidatesPerRow + 1)
+          self._candidatesLength = num;
+      self._sendCandidates(candidates);
+      //self._sendCandidates(candidates.slice(0,numberOfCandidatesPerRow));
+      callback();
 
-      emEngineWrapper.post('im_search', {
+      /*emEngineWrapper.post('im_search', { //parameters of im_search
         queryString: this._pendingSymbols,
         limit: numberOfCandidatesPerRow + 1
       }, function(returnValue) {
@@ -472,7 +386,7 @@ IMEngine.prototype = {
 
         self._sendCandidates(candidates);
         callback();
-      });
+      });*/
     }
   },
 
@@ -482,85 +396,10 @@ IMEngine.prototype = {
 
     this._glue.alterKeyboard(keyboard);
   },
-
+  
   _resetKeypressQueue: function engine_abortKeypressQueue() {
     this._keypressQueue = [];
     this._isWorking = false;
-  },
-
-  _accessUserDict: function engine_loadUserDict(action, param, callback) {
-    var indexedDB = window.indexedDB;
-
-    if (!indexedDB) {
-      callback(null);
-      return;
-    }
-
-    // Access user_dict.data from IndexedDB
-    var dbVersion = 1;
-    var STORE_NAME = 'files';
-    var USER_DICT = 'user_dict';
-
-    var request = indexedDB.open('EmpinyinDatabase', dbVersion);
-
-    request.onerror = function opendb_onerror(event) {
-      debug('Error occurs when openning database: ' + event.target.errorCode);
-      callback(null);
-    };
-
-    request.onsuccess = function opendb_onsuccess(event) {
-      var db = event.target.result;
-
-      if (action == 'load') {
-        var request = db.transaction([STORE_NAME], 'readonly')
-                        .objectStore(STORE_NAME).get(USER_DICT);
-
-        request.onsuccess = function readdb_oncomplete(event) {
-          db.close();
-          if (!event.target.result) {
-            callback(null);
-          } else {
-            callback(event.target.result.content);
-          }
-        };
-
-        request.onerror = function readdb_oncomplete(event) {
-          debug('Failed to read file from DB: ' + event.target.result.name);
-          db.close();
-          callback(null);
-        };
-      } else if (action == 'save') {
-        var obj = {
-          name: USER_DICT,
-          content: param
-        };
-
-        var request = db.transaction([STORE_NAME], 'readwrite')
-                        .objectStore(STORE_NAME).put(obj);
-
-        request.onsuccess = function readdb_oncomplete(event) {
-          db.close();
-          callback(true);
-        };
-
-        request.onerror = function readdb_oncomplete(event) {
-          debug('Failed to write file to DB: ' + event.target.result.name);
-          db.close();
-          callback(false);
-        };
-      }
-    };
-
-    request.onupgradeneeded = function opendb_onupgradeneeded(event) {
-      var db = event.target.result;
-
-      // Delete the old ObjectStore if present
-      if (db.objectStoreNames.length !== 0) {
-        db.deleteObjectStore(STORE_NAME);
-      }
-
-      db.createObjectStore(STORE_NAME, { keyPath: 'name' });
-    };
   },
 
   /**
@@ -568,7 +407,14 @@ IMEngine.prototype = {
    */
   init: function engine_init(glue) {
     IMEngineBase.prototype.init.call(this, glue);
-    debug('init.');
+    
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "js/imes/jspinyin/engine_test.js";
+  document.body.appendChild(script);
+  
+  console.log('engine inited');
+    
   },
 
   /**
@@ -576,15 +422,14 @@ IMEngine.prototype = {
    */
   uninit: function engine_uninit() {
     IMEngineBase.prototype.uninit.call(this);
-    debug('Uninit.');
 
     if (this._uninitTimer) {
       clearTimeout(this._uninitTimer);
       this._uninitTimer = null;
     }
 
-    if (emEngineWrapper.isReady())
-      emEngineWrapper.uninit();
+    /*if (emEngineWrapper.isReady())
+      emEngineWrapper.uninit();*/
 
     this._resetKeypressQueue();
     this.empty();
@@ -595,21 +440,29 @@ IMEngine.prototype = {
    */
   click: function engine_click(keyCode) {
     IMEngineBase.prototype.click.call(this, keyCode);
-
-    switch (keyCode) {
-      case -31: // Switch to English Symbol Panel, Page 1
-      case -32: // Switch to English Symbol Panel, Page 2
-        var index = Math.abs(keyCode);
-        var symbolPage = index % 10;
-        this._alterKeyboard(
+    if(Module._isReady){
+    //this._keypressQueue.push(keyCode);
+      switch (keyCode) {
+        case -31: // Switch to English Symbol Panel, Page 1
+        case -32: // Switch to English Symbol Panel, Page 2
+          var index = Math.abs(keyCode);
+          var symbolPage = index % 10;
+          this._alterKeyboard(
           'zh-Hans-Pinyin-Symbol-En-' + symbolPage);
-        break;
+          break;
+        default:
+          this._keypressQueue.push(keyCode);
+          break;
+      }
+    /*switch (keyCode) {
       default:
         this._keypressQueue.push(keyCode);
         break;
+    }*/
+    
+    this._start(); //after click, start search
     }
-
-    this._start();
+    
   },
 
   /**
@@ -618,8 +471,8 @@ IMEngine.prototype = {
   select: function engine_select(text, data) {
     IMEngineBase.prototype.select.call(this, text, data);
 
-    if (!emEngineWrapper.isReady())
-      return;
+    /*if (!emEngineWrapper.isReady())
+      return;*/
 
     var self = this;
     var nextStep = function(text) {
@@ -637,15 +490,19 @@ IMEngine.prototype = {
       self._keypressQueue.push(0);
       self._start();
     };
+    
+    //if (!this._pendingSymbols){
+    nextStep(text);
+    //}
 
-    if (this._pendingSymbols) {
+    /*if (this._pendingSymbols) {
       emEngineWrapper.post('im_choose', {
         candId: parseInt(data)
       }, nextStep);
     } else {
       // A predication candidate is selected.
       nextStep(text);
-    }
+    }*/
   },
 
   /**
@@ -653,7 +510,6 @@ IMEngine.prototype = {
    */
   empty: function engine_empty() {
     IMEngineBase.prototype.empty.call(this);
-    debug('empty.');
     this._pendingSymbols = '';
     this._historyText = '';
     this._firstCandidate = '';
@@ -664,19 +520,21 @@ IMEngine.prototype = {
   /**
    * Override
    */
-  activate: function engine_activate(language, state, options) {
+  activate: function engine_activate(language, state, options) {  //TBM
     IMEngineBase.prototype.activate.call(this, language, state, options);
 
-    if (this._uninitTimer) {
+    /*if (this._uninitTimer) {
       clearTimeout(this._uninitTimer);
       this._uninitTimer = null;
-    }
+    }*/
 
-    var inputType = state.type;
-    debug('Activate. Input type: ' + inputType);
+    //var inputType = state.type;
+    //debug('Activate. Input type: ' + inputType);
+    //var self = this;
+    //initModule();
+    //self._start();
 
-
-    if (!emEngineWrapper.isReady()) {
+    /*if (!emEngineWrapper.isReady()) {
       var self = this;
       this._accessUserDict('load', null, function(byteArray) {
         emEngineWrapper.init(self._glue.path, byteArray, function(isOk) {
@@ -689,17 +547,17 @@ IMEngine.prototype = {
       });
     } else {
       emEngineWrapper.post('im_flush_cache', {}, null);
-    }
+    }*/
 
     this._isActive = true;
+    console.log('engine activated');
   },
 
   /**
    * Override
    */
-  deactivate: function engine_deactivate() {
+  deactivate: function engine_deactivate() { //TBM
     IMEngineBase.prototype.deactivate.call(this);
-    debug('Deactivate.');
 
     if (!this._isActive)
       return;
@@ -708,15 +566,16 @@ IMEngine.prototype = {
 
     this._resetKeypressQueue();
     this.empty();
-
+/*
     var self = this;
-    emEngineWrapper.post('im_get_user_dict_data', {}, function(byteArray) {
+    if (!self._uninitTimer) {
+      self._uninitTimer = setTimeout(self.uninit.bind(self), self._workerTimeout);
+    }   */
+    /*emEngineWrapper.post('im_get_user_dict_data', {}, function(byteArray) {
       if (byteArray) {
         self._accessUserDict('save', byteArray, function(isOk) {
           if (isOk) {
-            debug('Saved user dictionary to DB.');
           } else {
-            debug('Failed to save user dictionary to DB.');
           }
 
           if (!self._uninitTimer) {
@@ -725,32 +584,36 @@ IMEngine.prototype = {
           }
         });
       }
-    });
+    });*/
   },
 
   getMoreCandidates: function engine_getMore(indicator, maxCount, callback) {
     if (this._candidatesLength == 0) {
+    console.log('getMoreCandidates:nocandidates');
       callback(null);
       return;
     }
-
+    //var numberOfCandidatesPerRow = this._glue.getNumberOfCandidatesPerRow ?this._glue.getNumberOfCandidatesPerRow() : Number.Infinity;
     var num = this._candidatesLength;
     maxCount = Math.min((maxCount || num) + indicator, num);
+    var results = Module.getResults(this._pendingSymbols,maxCount);
+    console.log('morecandidiates:resultslength:'+results.length);
 
-    var msgId = this._pendingSymbols ? 'im_get_candidates' : 'im_get_predicts';
+    //var msgId = this._pendingSymbols ? 'im_get_candidates' : 'im_get_predicts';
 
-    emEngineWrapper.post(msgId, {
-      start: indicator,
-      count: maxCount
-    }, function(results) {
+    //emEngineWrapper.post(msgId, {
+    //  start: indicator,
+    //  count: maxCount
+    //}, function(results) {
       var len = results.length;
       var list = [];
-      for (var i = 0; i < len; i++) {
-        list.push([results[i], i + indicator]);
+      for (var i = 7; i < len; i++) {
+        list.push([String.fromCharCode(results[i]), i + indicator]);
       }
       callback(list);
-    });
+    //});
   }
+  
 };
 
 var jspinyin = new IMEngine();
@@ -763,4 +626,7 @@ if (typeof define === 'function' && define.amd)
 if (typeof InputMethods !== 'undefined') {
   InputMethods.jspinyin = jspinyin;
 }
+
+
+
 })();
