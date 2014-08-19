@@ -10,6 +10,8 @@ var searchSingle;
  
    filePackagePrefixURL:'js/imes/jspinyin/',
    
+  canvas: {},
+   
 
   _main: function(){
     //console.log('hello');
@@ -214,7 +216,33 @@ IMEngine.prototype = {
 
     if (this._pendingSymbols) {
       var self = this;
-      self._glue.setComposition(self._pendingSymbols);
+      var symbols = '';
+      var len = this._pendingSymbols.length;
+      for (var id = 0; id< len; id++){
+        //var strokeSymb = this._pendingSymbols[id] +1;
+        switch(this._pendingSymbols[id]){
+        case 'h':
+          symbols += '㇐';
+          break;
+        case 's':
+          symbols += '㇑';
+          break;
+        case 'p':
+          symbols += '㇒';
+          break;
+        case 'n':
+          symbols += '㇔';
+          break;
+        case 'z':
+          symbols += '㇕';
+          break;
+        case '?':
+          symbols += '*';
+          break;
+        }
+      }
+      //self._glue.setComposition(self._pendingSymbols);
+      self._glue.setComposition(symbols);
 
     } else {
       this._glue.endComposition();
@@ -253,11 +281,15 @@ IMEngine.prototype = {
 
     if (!this._keypressQueue.length) {
       this._isWorking = false;
+      //
+      //this.empty();
       return;
     }
 
     var code = this._keypressQueue.shift(); //shift: delete first element and return its value
     // We use keycode 65 to represent "'" for pinyin input method
+    
+    console.log('inputcode:'+code);
     var realCode =  (code == -99) ? 63 : code;
 
     if (code == 0) {
@@ -292,7 +324,7 @@ IMEngine.prototype = {
 
     // Select the first candidate if needed.
     if (code === KeyEvent.DOM_VK_RETURN ||
-        !this._isStrokeKey(code) ||
+        !this._isStrokeKey(realCode) ||
         this._pendingSymbols.length >= this._kBufferLenLimit) {
       var sendKey = true;
       if (this._firstCandidate) {
@@ -318,11 +350,11 @@ IMEngine.prototype = {
 
     // add symbol to pendingSymbols
     this._appendNewSymbol(realCode);
-    this._updateCandidatesAndSymbols(this._next.bind(this)); //更新候选值,tobe modified!
+    this._updateCandidatesAndSymbols(this._next.bind(this));
   },
 
   _isStrokeKey :function engine_isStrokeKey(code) { //NEW
-    if(    code === 104 ||code ===110 || code===112 || code === 115 ||code ===122){
+    if( code===63||   code === 104 ||code ===110 || code===112 || code === 115 ||code ===122){
       return true;
     }
     
@@ -494,6 +526,8 @@ IMEngine.prototype = {
     //if (!this._pendingSymbols){
     nextStep(text);
     //}
+    
+    this.empty();
 
     /*if (this._pendingSymbols) {
       emEngineWrapper.post('im_choose', {
@@ -515,6 +549,7 @@ IMEngine.prototype = {
     this._firstCandidate = '';
     this._sendPendingSymbols();
     this._sendCandidates([]);
+    console.log('working area emptied');
   },
 
   /**
@@ -530,9 +565,9 @@ IMEngine.prototype = {
 
     //var inputType = state.type;
     //debug('Activate. Input type: ' + inputType);
-    //var self = this;
+    var self = this;
     //initModule();
-    //self._start();
+    self._start();
 
     /*if (!emEngineWrapper.isReady()) {
       var self = this;
@@ -548,6 +583,7 @@ IMEngine.prototype = {
     } else {
       emEngineWrapper.post('im_flush_cache', {}, null);
     }*/
+    
 
     this._isActive = true;
     console.log('engine activated');
@@ -559,13 +595,22 @@ IMEngine.prototype = {
   deactivate: function engine_deactivate() { //TBM
     IMEngineBase.prototype.deactivate.call(this);
 
-    if (!this._isActive)
+    if (!this._isActive){
       return;
+    }
+   // if (this._pendingSymbols  && this._firstCandidate) {
+      //this._glue.endComposition(this._firstCandidate);
+   //   this._sendCandidates([]);
+      //this._glue.sendString(this._firstCandidate);
+   //   console.log('send first candidate when deactivate');
+   // }
+    
 
     this._isActive = false;
 
     this._resetKeypressQueue();
     this.empty();
+    console.log('engine deactivated');
 /*
     var self = this;
     if (!self._uninitTimer) {

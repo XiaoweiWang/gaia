@@ -37,9 +37,9 @@ Keyboards['zh-Hans-Pinyin'] = {
     ]
   ],*/
   keys: [
-  [{value:'h'},{value:'s'},
-  {value:'p'},{value:'n'},
-  {value:'z'},{value:'?', keyCode: -99},{ value: '⌫', /*ratio: 1.5,*/ keyCode: KeyEvent.DOM_VK_BACK_SPACE }],
+  [{value:'㇐', keyCode: 104},{value:'㇑',keyCode: 115}],
+  [{value:'㇒',keyCode: 112},{value:'㇔',keyCode:110}],
+  [{value:'㇕',keyCode:122},{value:'*', keyCode: -99},{ value: '⌫', /*ratio: 1.5,*/ keyCode: KeyEvent.DOM_VK_BACK_SPACE }],
   [
       { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
       { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
