@@ -44,7 +44,8 @@
         {"layoutId": "en", "app": ["apps", "keyboard"]}
     ],
     "en-US": [
-        {"layoutId": "en", "app": ["apps", "keyboard"]}
+        {"layoutId": "en", "app": ["apps", "keyboard"]},
+        {"layoutId": "zh-Hans-Pinyin", "app": ["apps", "keyboard"]}
     ],
     "eo": [
         {"layoutId": "en", "app": ["apps", "keyboard"]}

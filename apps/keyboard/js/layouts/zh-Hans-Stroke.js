@@ -1,11 +1,11 @@
-Keyboards['zh-Hans-Pinyin'] = {
-  label: 'Chinese - Simplified - Pinyin',
+Keyboards['zh-Hans-Stroke'] = {
+  label: 'Chinese - Simplified - Stroke',
   shortLabel: '笔',
   menuLabel: '笔画',
   needsCandidatePanel: true,
   needsCommaKey: true,
-  imEngine: 'jspinyin',
-  types: ['text', 'url', 'email'],
+  imEngine: 'jsstroke',
+  types: ['text', 'url', 'email', 'number'],
   width: 10,
   textLayoutOverwrite: {
     ',': '，',
@@ -58,14 +58,11 @@ Keyboards['zh-Hans-Pinyin'] = {
         { value: '9' }, { value: '0' }
       ], [
         { value: '？' }, { value: '！' }, { value: '：' }, { value: '；' },
-        { value: '……', compositeKey: '……', className: 'pinyin-ch-ellipsis' },
+        { value: '……', compositeKey: '……', className: 'stroke-ch-ellipsis' },
         { value: '～' }, { value: '（' }, { value: '）' },
         { value: '“' }, { value: '”' }
       ], [
-        { value: 'Alt',
-          keyCode: KeyEvent.DOM_VK_ALT,
-          className: 'page-switch-key'
-        },
+        { value: 'Alt', keyCode: KeyEvent.DOM_VK_ALT },
         { value: '<div class="zh-encode-switcher \
                               zh-encode-switcher-half">半</div> \
                   <div class="zh-encode-switcher \
@@ -97,10 +94,7 @@ Keyboards['zh-Hans-Pinyin'] = {
         { value: '＄' }, { value: '￥' }, { value: '《' }, { value: '》' },
         { value: '｛' }, { value: '｝' }
       ], [
-        { value: 'Alt',
-          keyCode: KeyEvent.DOM_VK_ALT,
-          className: 'page-switch-key'
-        },
+        { value: 'Alt', keyCode: KeyEvent.DOM_VK_ALT },
         { value: '<div class="zh-encode-switcher \
                               zh-encode-switcher-half">半</div> \
                   <div class="zh-encode-switcher \
@@ -118,7 +112,7 @@ Keyboards['zh-Hans-Pinyin'] = {
   }
 };
 
-Keyboards['zh-Hans-Pinyin-Symbol-En-1'] = {
+Keyboards['zh-Hans-Stroke-Symbol-En-1'] = {
   needsCandidatePanel: true,
   needsCommaKey: true,
   width: 10,
@@ -132,7 +126,7 @@ Keyboards['zh-Hans-Pinyin-Symbol-En-1'] = {
       { value: '…' }, { value: '~' }, { value: '(' }, { value: ')' },
       { value: '\'' }, { value: '"' }
     ], [
-      { value: 'Alt', keyCode: -32, className: 'page-switch-key' },
+      { value: 'Alt', keyCode: -32 },
       { value: '<div class="zh-encode-switcher \
                             zh-encode-switcher-half \
                             zh-encode-switcher-selected">半</div> \
@@ -149,7 +143,7 @@ Keyboards['zh-Hans-Pinyin-Symbol-En-1'] = {
   ]
 };
 
-Keyboards['zh-Hans-Pinyin-Symbol-En-2'] = {
+Keyboards['zh-Hans-Stroke-Symbol-En-2'] = {
   needsCandidatePanel: true,
   needsCommaKey: true,
   width: 10,
@@ -163,7 +157,7 @@ Keyboards['zh-Hans-Pinyin-Symbol-En-2'] = {
       { value: '$' }, { value: '¥' }, { value: '<' }, { value: '>' },
       { value: '{' }, { value: '}' }
     ], [
-      { value: 'Alt', keyCode: -31, className: 'page-switch-key' },
+      { value: 'Alt', keyCode: -31 },
       { value: '<div class="zh-encode-switcher \
                             zh-encode-switcher-half \
                             zh-encode-switcher-selected">半</div> \

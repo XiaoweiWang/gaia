@@ -8,7 +8,7 @@ var searchSingle;
  
   _isReady: false,
  
-  filePackagePrefixURL:'js/imes/jspinyin/',
+  filePackagePrefixURL:'js/imes/jsstroke/',
    
   canvas: {},
    
@@ -442,7 +442,7 @@ IMEngine.prototype = {
     IMEngineBase.prototype.init.call(this, glue); 
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = "js/imes/jspinyin/engine_test.js";
+    script.src = "js/imes/jsstroke/engine_test.js";
     document.body.appendChild(script);
   
     console.log('engine inited');
@@ -480,7 +480,7 @@ IMEngine.prototype = {
           var index = Math.abs(keyCode);
           var symbolPage = index % 10;
           this._alterKeyboard(
-          'zh-Hans-Pinyin-Symbol-En-' + symbolPage);
+          'zh-Hans-Stroke-Symbol-En-' + symbolPage);
           break;
         default:
           this._keypressQueue.push(keyCode);
@@ -642,15 +642,15 @@ IMEngine.prototype = {
   
 };
 
-var jspinyin = new IMEngine();
+var jsstroke = new IMEngine();
 
 // Expose jspinyin as an AMD module
 if (typeof define === 'function' && define.amd)
-  define('jspinyin', [], function() { return jspinyin; });
+  define('jsstroke', [], function() { return jsstroke; });
 
 // Expose the engine to the Gaia keyboard
 if (typeof InputMethods !== 'undefined') {
-  InputMethods.jspinyin = jspinyin;
+  InputMethods.jsstroke = jsstroke;
 }
 
 
