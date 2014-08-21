@@ -189,7 +189,7 @@ IMEngine.prototype = {
 
   // Buffer limit will force output the longest matching terms
   // if the length of the syllables buffer is reached.
-  _kBufferLenLimit: 35,
+  _kBufferLenLimit: 51,
 
   // Remember the candidate length of last searching result because we don't
   // want to output all candidates at a time.
@@ -290,7 +290,7 @@ IMEngine.prototype = {
     // We use keycode 65 to represent "'" for pinyin input method
     
     console.log('inputcode:'+code);
-    var realCode =  (code == -99) ? 63 : code;
+    var realCode =  (code == 333) ? 63 : code;
 
     if (code == 0) {
       // This is a select function operation.
@@ -355,7 +355,7 @@ IMEngine.prototype = {
 
   //stroke keys: h,s,p,n,z, and the code for vague search
   _isStrokeKey :function engine_isStrokeKey(code) {
-    if( code===-99||   code === 104 ||code ===110 || code===112 || code === 115 ||code ===122){
+    if( code===333||   code === 104 ||code ===110 || code===112 || code === 115 ||code ===122){
       return true;
     }
     

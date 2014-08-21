@@ -3,54 +3,40 @@ Keyboards['zh-Hans-Stroke'] = {
   shortLabel: '笔',
   menuLabel: '笔画',
   needsCandidatePanel: true,
-  needsCommaKey: true,
+  //needsCommaKey: true,
+  disableAlternateLayout: true, // Hide "12&"
+  hidesSwitchKey: true,
+  basicLayoutKey: '㇐㇑㇓',
   imEngine: 'jsstroke',
   types: ['text', 'url', 'email', 'number'],
-  width: 10,
+  width: 12,
   textLayoutOverwrite: {
-    ',': '，',
-    '.': '。'
+    ',': false,
+    '.': false
   },
   alt: {
     '.': '.,?!;:',
-    '。': '。，？！；：'
+    '。': '。，？！'
   },
-  /*keys: [
-    [
-      { value: 'q' }, { value: 'w' }, { value: 'e' } , { value: 'r' },
-      { value: 't' } , { value: 'y' }, { value: 'u' } , { value: 'i' },
-      { value: 'o' }, { value: 'p' }
-    ], [
-      { value: 'a' }, { value: 's' }, { value: 'd' }, { value: 'f' },
-      { value: 'g' } , { value: 'h' }, { value: 'j' }, { value: 'k' },
-      { value: 'l' }
-    ], [
-      /*use 'A' keycode for this special symbol, so that it won't conflict with "'" in symbol page 
-      { value: "'", ratio: 1.5, keyCode: 65 },
-      { value: 'z' },
-      { value: 'x' }, { value: 'c' }, { value: 'v' }, { value: 'b' },
-      { value: 'n' }, { value: 'm' },
-      { value: '⌫', ratio: 1.5, keyCode: KeyEvent.DOM_VK_BACK_SPACE }
-    ], [
-      { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
-      { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
-    ]
-  ],*/
   keys: [
-  [{value:'㇐', keyCode: 104, ratio: 5},{value:'㇑',keyCode: 115,ratio: 5}],
-  [{value:'㇓',keyCode: 112,ratio: 3.3},{value:'㇔',keyCode:110, ratio: 3.4},
-  {value:'㇜',keyCode:122, ratio: 3.3}],[{value:'通配', keyCode: -99,ratio: 5},{ value: '⌫', ratio: 5, keyCode: KeyEvent.DOM_VK_BACK_SPACE }],
+  [{value:'㇐', keyCode: 104, ratio: 4},{value:'㇑',keyCode: 115,ratio: 4},{value:'㇓',keyCode: 112,ratio: 4}],
+  [{value:'㇔', keyCode: 110, ratio: 4},{value:'㇜',keyCode:122, ratio: 4},{value:'通', keyCode: 333,ratio: 4}],
+  [{value:'12&',  keyCode:-2  ,ratio: 4},{value:'。',className: 'alternate-indicator',  ratio: 4},{ value: '⌫', ratio: 4, keyCode: KeyEvent.DOM_VK_BACK_SPACE }],
   [
-      { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
-      { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
+      {value:'笔画', className: 'switch-key alternate-indicator', keyCode: -3, ratio: 4},
+      { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 4 },
+      { value: '↵', ratio: 4, keyCode: KeyEvent.DOM_VK_RETURN }
     ]
   ],
   alternateLayout: {
     needsCommaKey: true,
+    //disableAlternateLayout: true,
+    //hidesSwitchKey: true,
     textLayoutOverwrite: {
       ',': '，',
       '.': '。'
     },
+    //basicLayoutKey: '㇐㇑㇓',
     keys: [
       [
         { value: '1' }, { value: '2' }, { value: '3' } , { value: '4' },
@@ -58,7 +44,8 @@ Keyboards['zh-Hans-Stroke'] = {
         { value: '9' }, { value: '0' }
       ], [
         { value: '？' }, { value: '！' }, { value: '：' }, { value: '；' },
-        { value: '……', compositeKey: '……', className: 'stroke-ch-ellipsis' },
+        //ellipsis, keep unchanged?
+        { value: '……', compositeKey: '……', className: 'pinyin-ch-ellipsis' },
         { value: '～' }, { value: '（' }, { value: '）' },
         { value: '“' }, { value: '”' }
       ], [
@@ -73,6 +60,8 @@ Keyboards['zh-Hans-Stroke'] = {
         { value: '＃' }, { value: '％' }, { value: '／' },
         { value: '⌫', keyCode: KeyEvent.DOM_VK_BACK_SPACE }
       ], [
+        //{value:'㇐㇑㇓',  keyCode:-1  ,ratio: 1.8},
+        //{value:'笔画', className: 'switch-key alternate-indicator', keyCode: -3, ratio: 1.8},
         { value: '&nbsp', ratio: 8, keyCode: KeyboardEvent.DOM_VK_SPACE },
         { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
       ]
@@ -80,10 +69,12 @@ Keyboards['zh-Hans-Stroke'] = {
   },
   symbolLayout: {   // Chinese symbol 2
     needsCommaKey: true,
+    //hidesSwitchKey: true,
     textLayoutOverwrite: {
       ',': '，',
       '.': '。'
     },
+    //basicLayoutKey: '㇐㇑㇓',
     keys: [
       [
         { value: '1' }, { value: '2' }, { value: '3' } , { value: '4' },
@@ -105,6 +96,7 @@ Keyboards['zh-Hans-Stroke'] = {
         { value: '＊' }, { value: '·' }, { value: '｜' },
         { value: '⌫', keyCode: KeyEvent.DOM_VK_BACK_SPACE }
       ], [
+        //{value:'笔画', className: 'switch-key alternate-indicator', keyCode: -3, ratio: 2},
         { value: '&nbsp', ratio: 8, keyCode: KeyboardEvent.DOM_VK_SPACE },
         { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
       ]
@@ -115,7 +107,9 @@ Keyboards['zh-Hans-Stroke'] = {
 Keyboards['zh-Hans-Stroke-Symbol-En-1'] = {
   needsCandidatePanel: true,
   needsCommaKey: true,
+  //hidesSwitchKey: true,
   width: 10,
+  basicLayoutKey: '㇐㇑㇓',
   keys: [
     [
       { value: '1' }, { value: '2' }, { value: '3' } , { value: '4' },
@@ -137,6 +131,7 @@ Keyboards['zh-Hans-Stroke-Symbol-En-1'] = {
       { value: '#' }, { value: '%' }, { value: '/' },
       { value: '⌫', keyCode: KeyEvent.DOM_VK_BACK_SPACE }
     ], [
+      //{value:'笔画', className: 'switch-key alternate-indicator', keyCode: -3, ratio: 2},
       { value: '&nbsp', ratio: 8, keyCode: KeyboardEvent.DOM_VK_SPACE },
       { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
     ]
@@ -146,7 +141,9 @@ Keyboards['zh-Hans-Stroke-Symbol-En-1'] = {
 Keyboards['zh-Hans-Stroke-Symbol-En-2'] = {
   needsCandidatePanel: true,
   needsCommaKey: true,
+  //hidesSwitchKey: true,
   width: 10,
+  basicLayoutKey: '㇐㇑㇓',
   keys: [
     [
       { value: '1' }, { value: '2' }, { value: '3' } , { value: '4' },
@@ -168,6 +165,7 @@ Keyboards['zh-Hans-Stroke-Symbol-En-2'] = {
       { value: '*' }, { value: '`' }, { value: '|' },
       { value: '⌫', keyCode: KeyEvent.DOM_VK_BACK_SPACE }
     ], [
+      //{value:'笔画', className: 'switch-key alternate-indicator', keyCode: -3, ratio: 2},
       { value: '&nbsp', ratio: 8, keyCode: KeyboardEvent.DOM_VK_SPACE },
       { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
     ]

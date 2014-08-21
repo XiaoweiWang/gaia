@@ -44,8 +44,7 @@
         {"layoutId": "en", "app": ["apps", "keyboard"]}
     ],
     "en-US": [
-        {"layoutId": "en", "app": ["apps", "keyboard"]},
-        {"layoutId": "zh-Hans-Pinyin", "app": ["apps", "keyboard"]}
+        {"layoutId": "en", "app": ["apps", "keyboard"]}
     ],
     "eo": [
         {"layoutId": "en", "app": ["apps", "keyboard"]}
@@ -203,6 +202,7 @@
     ],
     "zh-CN": [
         {"layoutId": "zh-Hans-Pinyin", "app": ["apps", "keyboard"]},
+        {"layoutId": "zh-Hans-Stroke", "app": ["apps", "keyboard"]},
         {"layoutId": "en", "app": ["apps", "keyboard"]}
     ],
     "zh-TW": [

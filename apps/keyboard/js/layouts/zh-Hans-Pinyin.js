@@ -1,7 +1,7 @@
 Keyboards['zh-Hans-Pinyin'] = {
   label: 'Chinese - Simplified - Pinyin',
-  shortLabel: '笔',
-  menuLabel: '笔画',
+  shortLabel: '拼',
+  menuLabel: '拼音',
   needsCandidatePanel: true,
   needsCommaKey: true,
   imEngine: 'jspinyin',
@@ -15,7 +15,7 @@ Keyboards['zh-Hans-Pinyin'] = {
     '.': '.,?!;:',
     '。': '。，？！；：'
   },
-  /*keys: [
+  keys: [
     [
       { value: 'q' }, { value: 'w' }, { value: 'e' } , { value: 'r' },
       { value: 't' } , { value: 'y' }, { value: 'u' } , { value: 'i' },
@@ -25,7 +25,7 @@ Keyboards['zh-Hans-Pinyin'] = {
       { value: 'g' } , { value: 'h' }, { value: 'j' }, { value: 'k' },
       { value: 'l' }
     ], [
-      /*use 'A' keycode for this special symbol, so that it won't conflict with "'" in symbol page 
+      //use 'A' keycode for this special symbol, so that it won't conflict with "'" in symbol page 
       { value: "'", ratio: 1.5, keyCode: 65 },
       { value: 'z' },
       { value: 'x' }, { value: 'c' }, { value: 'v' }, { value: 'b' },
@@ -35,8 +35,8 @@ Keyboards['zh-Hans-Pinyin'] = {
       { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
       { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
     ]
-  ],*/
-  keys: [
+  ],
+  /*keys: [
   [{value:'㇐', keyCode: 104, ratio: 5},{value:'㇑',keyCode: 115,ratio: 5}],
   [{value:'㇓',keyCode: 112,ratio: 3.3},{value:'㇔',keyCode:110, ratio: 3.4},
   {value:'㇜',keyCode:122, ratio: 3.3}],[{value:'通配', keyCode: -99,ratio: 5},{ value: '⌫', ratio: 5, keyCode: KeyEvent.DOM_VK_BACK_SPACE }],
@@ -44,7 +44,7 @@ Keyboards['zh-Hans-Pinyin'] = {
       { value: '&nbsp', keyCode: KeyEvent.DOM_VK_SPACE, ratio: 8 },
       { value: '↵', ratio: 2, keyCode: KeyEvent.DOM_VK_RETURN }
     ]
-  ],
+  ],*/
   alternateLayout: {
     needsCommaKey: true,
     textLayoutOverwrite: {
