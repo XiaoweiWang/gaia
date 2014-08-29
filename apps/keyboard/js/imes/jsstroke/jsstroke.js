@@ -1,9 +1,10 @@
 'use strict';
 
-var searchSingle;
+var strokeSearchSingle;
+var strokeSearchInit;
+var assocSearchSingle;
+var assocSearchInit;
 
-
-//function initModule () {
  var Module = {
  
   _isReady: false,
@@ -15,69 +16,149 @@ var searchSingle;
 
   _main: function(){
     //console.log('hello');
-    searchSingle=
-      Module.cwrap('strokeSearchSearch','number',['string','number','number']);
-    var strokesSearchInit=
+    assocSearchInit=
+      Module.cwrap('assocSearchInit','',[]);
+    assocSearchSingle=
+      Module.cwrap('assocSearchSearch','number',['number','number','number']);
+    strokeSearchInit=
       Module.cwrap('strokeSearchInit','',[]);
-    strokesSearchInit();
+    strokeSearchSingle=
+      Module.cwrap('strokeSearchSearch','number',['string','number','number']);
+    assocSearchInit();
+    strokeSearchInit();
     Module._isReady = true;
     console.log('engine is ready');
   },
   
-  //searchSingle: function(){ console.log('no override!');},
   
-  
-  /*_initSearch: function(){
-    var searchInit = Module.cwrap('strokeSearchInit','',[]);
-    searchInit();
-  },*/
-  
-    getResults: function(strokes, limit){
+    
+   assocGetResults: function(keywords, limit){
           //var searchSingle = Module.cwrap('strokeSearchSearch','number',['string','number','number']);
           
           // Create example data to test float_multiply_array
-          var data = new Int32Array(limit);
+          var data = new Uint16Array(limit*6);
+          var kwdata = new Uint16Array(6);
+          for (var id = 0; id<keywords.length;id++){
+          
+          //kwdata.push(keywords.charCodeAt(id));
+          kwdata[id] = keywords.charCodeAt(id);
+          
+          }
+          //kwdata.push('\0');
+          for (var id=keywords.length; id<6; id++){
+            kwdata[id] = '\0';
+          //kwdata[keywords.length] = '\0';
+          }
+          //console.log(kwdata[0],kwdata[1]);
+          
           
           // Get data byte size, allocate memory on Emscripten heap, and get pointer
           var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
           var dataPtr = Module._malloc(nDataBytes);
           
+          var kwnDataBytes = kwdata.length * kwdata.BYTES_PER_ELEMENT;
+          var kwdataPtr = Module._malloc(kwnDataBytes);
+          
+          
+          
           // Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
-          var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, nDataBytes);
-          dataHeap.set(new Uint8Array(data.buffer));
+          var dataHeap = new Uint16Array(this.HEAPU16.buffer, dataPtr, nDataBytes);
+          dataHeap.set(new Uint16Array(data.buffer));
+
+          var kwdataHeap = new Uint16Array(this.HEAPU16.buffer, kwdataPtr, kwnDataBytes);
+          kwdataHeap.set(new Uint16Array(kwdata.buffer));
           
           // Call function and get result
-          //var strokevalue = document.getElementById("strokeall").value;
-          //testStrokeSearch (strokes,dataHeap.byteOffset);
-          //searchInit();
-          //this.searchSingle (strokes,limit,dataHeap.byteOffset);
-          //var searchtest = Module.cwrap('strokeSearchSearch','number',['string','number','number']);
-          //searchtest (strokes,limit,dataHeap.byteOffset);
-          searchSingle(strokes,limit,dataHeap.byteOffset);
-          var result = new Int32Array(dataHeap.buffer, dataHeap.byteOffset, data.length);
-          console.log('resultlength:'+result.length);
+          assocSearchSingle(kwdataHeap.byteOffset,limit,dataHeap.byteOffset);
+          //console.log("finish single assoc search");
+          var result = new Uint16Array(dataHeap.buffer, dataHeap.byteOffset, data.length);
           
           // Free memory
-          //Module._free(dataHeap.byteOffset);
+          Module._free(dataHeap.byteOffset);
+          Module._free(kwdataHeap.byteOffset);
           
+          //console.log(result.subarray(0,6));
+          //console.log(kwdata);
+          //console.log(result[0],result.length);
           //Module._searchSingle = searchSingle;
-          console.log('finished search');
-          return result;
           
-    }
+                    
+	  var phraseResult = [];
+	  var phraseId = 0;
+	  while(result[phraseId*6]){
+	  //while(phraseId*6<result.length && result[phraseId*6]){
+	    var charResult = '';
+	    var charId = phraseId*6;
+	    while(result[charId]){
+	      charResult += String.fromCharCode(result[charId]);
+	      //charResult.push(String.fromCharCode(result[charId]));
+	      ++charId;
+	    }
+	    phraseResult.push(charResult);
+	    ++phraseId;
+	  }
+	  
+	  
+	  
+	  return phraseResult;
+          //return result;
+          
+          
+  },
+ 
+    
+  strokeGetResults: function(strokes, limit){
+          //var searchSingle = Module.cwrap('strokeSearchSearch','number',['string','number','number']);
+          
+          // Create example data to test float_multiply_array
+          var data = new Uint16Array(limit);
+          
+          
+          // Get data byte size, allocate memory on Emscripten heap, and get pointer
+          var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
+          var dataPtr = Module._malloc(nDataBytes);
+          
+          
+          
+          // Copy data to Emscripten heap (directly accessed from Module.HEAPU8)
+          var dataHeap = new Uint16Array(this.HEAPU16.buffer, dataPtr, nDataBytes);
+          dataHeap.set(new Uint16Array(data.buffer));
+          
+          // Call function and get result
+          strokeSearchSingle(strokes,limit,dataHeap.byteOffset);
+          var result = new Uint16Array(dataHeap.buffer, dataHeap.byteOffset, data.length);
+          
+          // Free memory
+          Module._free(dataHeap.byteOffset);
+          
+          //console.log(result[0],result.length);
+          //Module._searchSingle = searchSingle;
+	  
+	  var charResult = [];
+	  var id = 0;
+	  //while(id<result.length && result[id]){
+	  while(result[id]){
+	    charResult.push(String.fromCharCode(result[id]));
+	    ++id;
+	  }
+	  console.log("character result length:"+charResult.length);
+	  console.log(charResult[0]);
+	  console.log("stroke result length:"+result.length);
+	  	  
+          
+          return charResult;
+          //return result;
+          
+          
+  },
+  
+    
+    
+    
   };
   
-  //HOW to import js?
-  /*try {
-   document.write('<script type="text/javascript" src = "engine_test.js"></script>');
-  } catch (e) {
-    console.log(e.toString());
-  }*/
-  
-
   
  (function () { 
-//}
 
 /* for non-Mozilla browsers */
 if (!KeyEvent) {
@@ -256,15 +337,17 @@ IMEngine.prototype = {
    */
   _sendCandidates: function engine_sendCandidates(candidates) {  //ok
     var list = []; // hold candidates
+    console.log("sendCandidates candidates:"+candidates[0]+candidates.length);
     var len = candidates.length;
     for (var id = 0; id < len; id++) {
-      var cand = String.fromCharCode(candidates[id]);
+      var cand = candidates[id];
+      //var cand = String.fromCharCode(candidates[id]);
       if (id == 0) {
         this._firstCandidate = cand;
       }
       list.push([cand, id]);
     }
-
+    console.log("sendCandidates list:"+list[0]+list.length);
     this._glue.sendCandidates(list);//send candidates to list, set first candidate
   },
 
@@ -389,37 +472,41 @@ IMEngine.prototype = {
       // If there is no pending symbols, make prediction with the previous
       // select words.
 
+      if(this._historyText){
+        var predicts = Module.assocGetResults(this._historyText,50);
+        var num = predicts.length;
+        if (num > numberOfCandidatesPerRow + 1){
+          self._candidatesLength = num;
+        }
+        console.log("updatecandidatelist:"+ predicts[0]+predicts.length);
+        self._sendCandidates(predicts);
         callback();
+
+      
+      
+      } else {
+        console.log("no historytext.");
+        this._sendCandidates([]);
+        callback();
+      }
+      
     } else {
       // Update the candidates list by the pending pinyin string.
       this._historyText = '';
-      var candidates = Module.getResults(this._pendingSymbols,50);
+      var candidates = Module.strokeGetResults(this._pendingSymbols,50);
       //var candidates = Module.getResults(this._pendingSymbols,numberOfCandidatesPerRow + 1);
       var num = candidates.length;
       /*for (var i=0;i<candidates.length;i++){
         candidates[i] = String.fromCharCode(candidates[i]);
       }*/
       //var candidates = Module.getResults(this._pendingSymbols,30);
-      console.log('got results!'+'candsLen:'+num);
-        if (num > numberOfCandidatesPerRow + 1)
+      //console.log('got results!'+'candsLen:'+num);
+        if (num > numberOfCandidatesPerRow + 1){
           self._candidatesLength = num;
+        }
       self._sendCandidates(candidates);
       //self._sendCandidates(candidates.slice(0,numberOfCandidatesPerRow));
       callback();
-
-      /*emEngineWrapper.post('im_search', { //parameters of im_search
-        queryString: this._pendingSymbols,
-        limit: numberOfCandidatesPerRow + 1
-      }, function(returnValue) {
-        var num = returnValue.length;
-        var candidates = returnValue.results;
-
-        if (num > numberOfCandidatesPerRow + 1)
-          self._candidatesLength = num;
-
-        self._sendCandidates(candidates);
-        callback();
-      });*/
     }
   },
 
@@ -442,7 +529,7 @@ IMEngine.prototype = {
     IMEngineBase.prototype.init.call(this, glue); 
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = "js/imes/jsstroke/engine_test.js";
+    script.src = "js/imes/jsstroke/engine_c.js";
     document.body.appendChild(script);
   
     console.log('engine inited');
@@ -505,7 +592,6 @@ IMEngine.prototype = {
 
     /*if (!emEngineWrapper.isReady())
       return;*/
-
     var self = this;
     var nextStep = function(text) {
       if (text) {
@@ -522,12 +608,12 @@ IMEngine.prototype = {
       self._keypressQueue.push(0);
       self._start();
     };
-    
+    console.log("select: pendingsymbols"+this._pendingSymbols);
     //if (!this._pendingSymbols){
     nextStep(text);
     //}
     
-    this.empty();
+    //this.empty();
 
     /*if (this._pendingSymbols) {
       emEngineWrapper.post('im_choose', {
@@ -622,7 +708,11 @@ IMEngine.prototype = {
     //var numberOfCandidatesPerRow = this._glue.getNumberOfCandidatesPerRow ?this._glue.getNumberOfCandidatesPerRow() : Number.Infinity;
     var num = this._candidatesLength;
     maxCount = Math.min((maxCount || num) + indicator, num);
-    var results = Module.getResults(this._pendingSymbols,maxCount);
+    
+    
+    
+    
+    /*var results = Module.strokeGetResults(this._pendingSymbols,maxCount);
     console.log('morecandidiates:resultslength:'+results.length);
 
     //var msgId = this._pendingSymbols ? 'im_get_candidates' : 'im_get_predicts';
@@ -634,10 +724,19 @@ IMEngine.prototype = {
       var len = results.length;
       var list = [];
       for (var i = 7; i < len; i++) {
-        list.push([String.fromCharCode(results[i]), i + indicator]);
+        list.push([results[i], i + indicator]);
       }
       callback(list);
-    //});
+    //});*/
+    console.log('getMoreCandidates:indicator:'+indicator);
+    var totalResNum = 50;
+    var results = this._pendingSymbols ? Module.strokeGetResults(this._pendingSymbols,totalResNum):Module.assocGetResults(this._historyText,totalResNum);
+    var len = results.length;
+    var list = [];
+    for (var i = indicator; i < len; i++) {
+      list.push([results[i], i+indicator]);
+    }
+    callback(list);  
   }
   
 };
