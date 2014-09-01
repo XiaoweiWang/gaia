@@ -68,7 +68,6 @@ var Module = {
     var phraseResult = [];
     var phraseId = 0;
     while (result[phraseId*6]) {
-    //while(phraseId*6<result.length && result[phraseId*6]){
       var charResult = '';
       var charId = phraseId*6;
       while(result[charId]){
@@ -105,7 +104,7 @@ var Module = {
 
     var charResult = [];
     var id = 0;
-    //while(id<result.length && result[id]){
+    //If id excesses range, the result will be undefined.
     while(result[id]){
       charResult.push(String.fromCharCode(result[id]));
       ++id;
@@ -315,8 +314,6 @@ IMEngine.prototype = {
 
     if (!this._keypressQueue.length) {
       this._isWorking = false;
-      //
-      //this.empty();
       return;
     }
 
@@ -549,7 +546,6 @@ IMEngine.prototype = {
   activate: function engine_activate(language, state, options) {
     IMEngineBase.prototype.activate.call(this, language, state, options);
     var self = this;
-    //initModule();
     self._start();
     this._isActive = true;
     console.log('engine activated');
